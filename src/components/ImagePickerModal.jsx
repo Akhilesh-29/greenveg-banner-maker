@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Upload, Image as ImageIcon, Check, Sparkles } from 'lucide-react';
 import { PRODUCT_CATALOG } from '../constants/catalog';
+import { getAssetUrl } from '../utils/assetHelper';
 
 export const ImagePickerModal = ({ isOpen, onClose, onSelect, currentImage, currentEmoji }) => {
   if (!isOpen) return null;
@@ -159,7 +160,7 @@ export const ImagePickerModal = ({ isOpen, onClose, onSelect, currentImage, curr
                       {/* Real Image Container */}
                       <div className="w-full h-28 bg-slate-100 dark:bg-slate-900 overflow-hidden relative">
                         <img
-                          src={item.image}
+                          src={getAssetUrl(item.image)}
                           alt={item.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
@@ -195,7 +196,7 @@ export const ImagePickerModal = ({ isOpen, onClose, onSelect, currentImage, curr
               {currentImage ? (
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-56 h-56 rounded-2xl border-4 border-emerald-500 overflow-hidden shadow-xl bg-slate-100 dark:bg-slate-800">
-                    <img src={currentImage} alt="Current" className="w-full h-full object-cover" />
+                    <img src={getAssetUrl(currentImage)} alt="Current" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex gap-3">
                     <label className="cursor-pointer px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition shadow">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Phone, MapPin, Sparkles, CheckCircle2, Clock } from 'lucide-react';
 import { TRANSLATIONS } from '../constants/localization';
+import { getAssetUrl } from '../utils/assetHelper';
 
 export const MultiProductLayout = ({
   items = [],
@@ -113,7 +114,7 @@ export const MultiProductLayout = ({
                       <div className="flex items-center gap-2">
                         {item.customImage ? (
                           <img
-                            src={item.customImage}
+                            src={getAssetUrl(item.customImage)}
                             alt=""
                             className="w-10 h-10 rounded-xl object-cover border border-slate-200 shadow-sm shrink-0"
                           />

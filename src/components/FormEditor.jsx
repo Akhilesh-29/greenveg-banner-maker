@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2, Tag, Percent, Sparkles, RefreshCw, Image, ArrowRight } from 'lucide-react';
 import { UNITS } from '../constants/catalog';
 import { TRANSLATIONS } from '../constants/localization';
+import { getAssetUrl } from '../utils/assetHelper';
 
 export const FormEditor = ({
   mode,
@@ -32,7 +33,7 @@ export const FormEditor = ({
       id: Date.now().toString(),
       name: 'Green Capsicum',
       emoji: '',
-      customImage: '/products/capsicum.jpg',
+      customImage: 'products/capsicum.jpg',
       unit: '500 g',
       mrp: 45,
       price: 30
@@ -56,11 +57,11 @@ export const FormEditor = ({
 
   const handleLoadSampleItems = () => {
     const samples = [
-      { id: '1', name: 'Fresh Royal Apple', emoji: '', customImage: '/products/apple.jpg', unit: '1 kg', mrp: 180, price: 139 },
-      { id: '2', name: 'Farm Fresh Tomato', emoji: '', customImage: '/products/tomato.jpg', unit: '1 kg', mrp: 40, price: 24 },
-      { id: '3', name: 'Fresh Pahadi Potato', emoji: '', customImage: '/products/potato.jpg', unit: '1 kg', mrp: 45, price: 32 },
-      { id: '4', name: 'Nasik Red Onion', emoji: '', customImage: '/products/onion.jpg', unit: '1 kg', mrp: 55, price: 38 },
-      { id: '5', name: 'Crisp Red Carrot', emoji: '', customImage: '/products/carrot.jpg', unit: '500 g', mrp: 40, price: 28 }
+      { id: '1', name: 'Fresh Royal Apple', emoji: '', customImage: 'products/apple.jpg', unit: '1 kg', mrp: 180, price: 139 },
+      { id: '2', name: 'Farm Fresh Tomato', emoji: '', customImage: 'products/tomato.jpg', unit: '1 kg', mrp: 40, price: 24 },
+      { id: '3', name: 'Fresh Pahadi Potato', emoji: '', customImage: 'products/potato.jpg', unit: '1 kg', mrp: 45, price: 32 },
+      { id: '4', name: 'Nasik Red Onion', emoji: '', customImage: 'products/onion.jpg', unit: '1 kg', mrp: 55, price: 38 },
+      { id: '5', name: 'Crisp Red Carrot', emoji: '', customImage: 'products/carrot.jpg', unit: '500 g', mrp: 40, price: 28 }
     ];
     setMultiItems(samples);
   };
@@ -93,7 +94,7 @@ export const FormEditor = ({
                 title="Click to change visual"
               >
                 {singleProduct.customImage ? (
-                  <img src={singleProduct.customImage} alt="" className="w-full h-full object-cover" />
+                  <img src={getAssetUrl(singleProduct.customImage)} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <span>{singleProduct.emoji || '🍎'}</span>
                 )}
@@ -331,7 +332,7 @@ export const FormEditor = ({
                       className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 flex items-center justify-center text-2xl hover:scale-105 transition shrink-0"
                     >
                       {item.customImage ? (
-                        <img src={item.customImage} alt="" className="w-full h-full object-cover rounded-xl" />
+                        <img src={getAssetUrl(item.customImage)} alt="" className="w-full h-full object-cover rounded-xl" />
                       ) : (
                         <span>{item.emoji || '🥬'}</span>
                       )}

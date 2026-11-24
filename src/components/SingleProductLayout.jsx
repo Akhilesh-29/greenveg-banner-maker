@@ -1,6 +1,7 @@
 import React from 'react';
 import { Phone, MapPin, Sparkles, Tag, CheckCircle2, ShieldCheck, Clock } from 'lucide-react';
 import { TRANSLATIONS } from '../constants/localization';
+import { getAssetUrl } from '../utils/assetHelper';
 
 export const SingleProductLayout = ({
   product,
@@ -94,7 +95,7 @@ export const SingleProductLayout = ({
           <div className={`relative group ${isTall ? 'w-80 h-80' : isWide ? 'w-72 h-72' : 'w-72 h-72'} rounded-3xl bg-white/95 backdrop-blur-md p-4 shadow-2xl flex items-center justify-center border-4 border-white/80`}>
             {product.customImage ? (
               <img
-                src={product.customImage}
+                src={getAssetUrl(product.customImage)}
                 alt={product.name}
                 className="w-full h-full object-cover rounded-2xl shadow-sm"
               />

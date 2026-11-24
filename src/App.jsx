@@ -73,16 +73,16 @@ export default function App() {
     tagline: 'Fresh Direct From Farm',
     offerTitle: 'SPECIAL OFFER',
     emoji: '',
-    customImage: '/products/apple.jpg'
+    customImage: 'products/apple.jpg'
   });
 
   // Multi Product Items State (Default Real Photos)
   const [multiItems, setMultiItems] = useState([
-    { id: '1', name: 'Fresh Royal Apple', emoji: '', customImage: '/products/apple.jpg', unit: '1 kg', mrp: 180, price: 139 },
-    { id: '2', name: 'Farm Fresh Tomato', emoji: '', customImage: '/products/tomato.jpg', unit: '1 kg', mrp: 40, price: 24 },
-    { id: '3', name: 'Fresh Pahadi Potato', emoji: '', customImage: '/products/potato.jpg', unit: '1 kg', mrp: 45, price: 32 },
-    { id: '4', name: 'Nasik Red Onion', emoji: '', customImage: '/products/onion.jpg', unit: '1 kg', mrp: 55, price: 38 },
-    { id: '5', name: 'Crisp Red Carrot', emoji: '', customImage: '/products/carrot.jpg', unit: '500 g', mrp: 40, price: 28 }
+    { id: '1', name: 'Fresh Royal Apple', emoji: '', customImage: 'products/apple.jpg', unit: '1 kg', mrp: 180, price: 139 },
+    { id: '2', name: 'Farm Fresh Tomato', emoji: '', customImage: 'products/tomato.jpg', unit: '1 kg', mrp: 40, price: 24 },
+    { id: '3', name: 'Fresh Pahadi Potato', emoji: '', customImage: 'products/potato.jpg', unit: '1 kg', mrp: 45, price: 32 },
+    { id: '4', name: 'Nasik Red Onion', emoji: '', customImage: 'products/onion.jpg', unit: '1 kg', mrp: 55, price: 38 },
+    { id: '5', name: 'Crisp Red Carrot', emoji: '', customImage: 'products/carrot.jpg', unit: '500 g', mrp: 40, price: 28 }
   ]);
 
   // Shop Profile & History
