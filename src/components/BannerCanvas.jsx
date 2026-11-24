@@ -20,7 +20,7 @@ export const BannerCanvas = ({
 }) => {
   const containerRef = useRef(null);
   const [scale, setScale] = useState(0.4);
-  const [zoomLevel, setZoomLevel] = useState(1); // multiplier on top of auto-fit
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   // ResizeObserver for reliable fit-to-screen scale
   useEffect(() => {
@@ -111,7 +111,7 @@ export const BannerCanvas = ({
           backgroundSize: '18px 18px'
         }}
       >
-        {/* Sized wrapper to reserve space for scaled element */}
+        {/* Sized wrapper to reserve space in scroll view */}
         <div
           style={{
             width: `${size.width * effectiveScale}px`,
@@ -121,10 +121,8 @@ export const BannerCanvas = ({
           }}
           className="transition-[width,height] duration-150 shrink-0"
         >
-          {/* THE ACTUAL RENDER ELEMENT EXPORTED TO IMAGE */}
+          {/* Zoom presentation container applying CSS transform only to preview view */}
           <div
-            ref={exportRef}
-            id="banner-capture-node"
             style={{
               width: `${size.width}px`,
               height: `${size.height}px`,
@@ -134,34 +132,45 @@ export const BannerCanvas = ({
               top: 0,
               left: 0
             }}
-            className="shadow-2xl rounded-3xl overflow-hidden ring-1 ring-black/10"
           >
-            {mode === 'single' ? (
-              <SingleProductLayout
-                product={singleProduct}
-                template={template}
-                shopProfile={shopProfile}
-                language={language}
-                currency={currency}
-                aspectRatio={size.aspect}
-                fontClass={fontClass}
-                showDateStamp={showDateStamp}
-                dateStampText={dateStampText}
-              />
-            ) : (
-              <MultiProductLayout
-                items={multiItems}
-                template={template}
-                shopProfile={shopProfile}
-                language={language}
-                currency={currency}
-                aspectRatio={size.aspect}
-                fontClass={fontClass}
-                showDateStamp={showDateStamp}
-                dateStampText={dateStampText}
-                boardTitle={boardTitle}
-              />
-            )}
+            {/* THE ACTUAL RENDER ELEMENT EXPORTED TO IMAGE (ZERO TRANSFORM!) */}
+            <div
+              ref={exportRef}
+              id="banner-capture-node"
+              style={{
+                width: `${size.width}px`,
+                height: `${size.height}px`,
+                position: 'relative'
+              }}
+              className="shadow-2xl rounded-3xl overflow-hidden ring-1 ring-black/10"
+            >
+              {mode === 'single' ? (
+                <SingleProductLayout
+                  product={singleProduct}
+                  template={template}
+                  shopProfile={shopProfile}
+                  language={language}
+                  currency={currency}
+                  aspectRatio={size.aspect}
+                  fontClass={fontClass}
+                  showDateStamp={showDateStamp}
+                  dateStampText={dateStampText}
+                />
+              ) : (
+                <MultiProductLayout
+                  items={multiItems}
+                  template={template}
+                  shopProfile={shopProfile}
+                  language={language}
+                  currency={currency}
+                  aspectRatio={size.aspect}
+                  fontClass={fontClass}
+                  showDateStamp={showDateStamp}
+                  dateStampText={dateStampText}
+                  boardTitle={boardTitle}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

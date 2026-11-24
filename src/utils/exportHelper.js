@@ -40,12 +40,26 @@ export const exportBanner = async ({
 }) => {
   if (!element) throw new Error('Preview element not found');
 
+  const targetW = Number(width) || 1080;
+  const targetH = Number(height) || 1080;
+
   const options = {
-    quality: format === 'jpg' ? 0.95 : 1,
+    quality: format === 'jpg' ? 0.98 : 1,
     pixelRatio: Number(scale) || 2,
+    width: targetW,
+    height: targetH,
+    canvasWidth: targetW * (Number(scale) || 2),
+    canvasHeight: targetH * (Number(scale) || 2),
+    style: {
+      transform: 'none',
+      transformOrigin: 'top left',
+      position: 'static',
+      margin: '0',
+      boxShadow: 'none',
+      borderRadius: '0px'
+    },
     cacheBust: true,
     filter: (node) => {
-      // Ignore controls or watermarks that shouldn't appear in export
       if (node.classList && node.classList.contains('no-export')) {
         return false;
       }
@@ -65,16 +79,16 @@ export const exportBanner = async ({
     return dataUrl;
   } else if (format === 'pdf') {
     const dataUrl = await toJpeg(element, { ...options, quality: 0.98 });
-    const isLandscape = width > height;
+    const isLandscape = targetW > targetH;
     
     // Create PDF matching aspect ratio
     const pdf = new jsPDF({
       orientation: isLandscape ? 'landscape' : 'portrait',
       unit: 'px',
-      format: [width, height]
+      format: [targetW, targetH]
     });
 
-    pdf.addImage(dataUrl, 'JPEG', 0, 0, width, height);
+    pdf.addImage(dataUrl, 'JPEG', 0, 0, targetW, targetH);
     pdf.save(`${filename}.pdf`);
     triggerCelebration();
     return dataUrl;
@@ -90,11 +104,29 @@ const downloadFile = (dataUrl, filename) => {
   document.body.removeChild(link);
 };
 
-export const shareBanner = async ({ element, title, text, filename = 'shop-banner' }) => {
+export const shareBanner = async ({ element, title, text, filename = 'shop-banner', width = 1080, height = 1080 }) => {
   if (!element) return false;
 
+  const targetW = Number(width) || 1080;
+  const targetH = Number(height) || 1080;
+
   try {
-    const blob = await toBlob(element, { pixelRatio: 2, quality: 0.92 });
+    const blob = await toBlob(element, {
+      pixelRatio: 2,
+      quality: 0.95,
+      width: targetW,
+      height: targetH,
+      canvasWidth: targetW * 2,
+      canvasHeight: targetH * 2,
+      style: {
+        transform: 'none',
+        transformOrigin: 'top left',
+        position: 'static',
+        margin: '0',
+        boxShadow: 'none',
+        borderRadius: '0px'
+      }
+    });
     if (!blob) return false;
 
     const file = new File([blob], `${filename}.png`, { type: 'image/png' });
@@ -125,7 +157,6 @@ export const openWhatsAppShare = ({ text, phone = '' }) => {
   const cleanPhone = phone.replace(/[^0-9]/g, '');
   const encodedText = encodeURIComponent(text);
   
-  // If phone provided, can pre-target or general wa.me
   const url = cleanPhone
     ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedText}`
     : `https://api.whatsapp.com/send?text=${encodedText}`;
