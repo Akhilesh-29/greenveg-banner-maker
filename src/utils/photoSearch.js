@@ -112,39 +112,81 @@ export const findLocalPhoto = (name) => {
 };
 
 /**
- * Live internet photo search via Wikipedia / Wikimedia Public Commons API
- * Returns array of { title, url, thumbnail }
+ * Live internet photo search via Wikimedia Commons File API
+ * Returns array of actual photographic image results
  */
 export const searchInternetPhotos = async (query) => {
   if (!query || query.trim().length < 2) return [];
 
   const cleanQuery = query.trim().toLowerCase();
-  const searchTerms = `${cleanQuery} fruit OR vegetable OR plant OR food`;
 
   try {
-    const url = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(
-      searchTerms
-    )}&gsrlimit=8&prop=pageimages&piprop=thumbnail&pithumbsize=600&format=json&origin=*`;
+    // Search Wikimedia Commons in file namespace (namespace 6) for actual photography
+    const url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(
+      cleanQuery + ' fruit OR vegetable OR produce'
+    )}&gsrnamespace=6&gsrlimit=10&prop=imageinfo&iiprop=url|thumburl&iiurlwidth=600&format=json&origin=*`;
 
     const res = await fetch(url);
     if (!res.ok) return [];
 
     const data = await res.json();
-    if (!data.query || !data.query.pages) return [];
+    if (!data.query || !data.query.pages) {
+      // Fallback to Wikipedia pageimage search
+      return await searchWikipediaFallback(cleanQuery);
+    }
 
     const pages = Object.values(data.query.pages);
     const results = pages
-      .filter((page) => page.thumbnail && page.thumbnail.source)
-      .map((page) => ({
-        id: page.pageid,
-        title: page.title,
-        url: page.thumbnail.source,
-        thumbnail: page.thumbnail.source
-      }));
+      .filter(
+        (page) =>
+          page.imageinfo &&
+          page.imageinfo[0] &&
+          page.imageinfo[0].thumburl &&
+          !page.title.toLowerCase().endsWith('.svg') &&
+          !page.title.toLowerCase().endsWith('.pdf')
+      )
+      .map((page) => {
+        const info = page.imageinfo[0];
+        const cleanTitle = page.title
+          .replace(/^File:/i, '')
+          .replace(/\.[^.]+$/, '')
+          .replace(/[_-]/g, ' ')
+          .trim();
+        return {
+          id: page.pageid,
+          title: cleanTitle,
+          url: info.thumburl,
+          thumbnail: info.thumburl
+        };
+      });
 
-    return results;
+    return results.length > 0 ? results : await searchWikipediaFallback(cleanQuery);
   } catch (err) {
     console.warn('Internet photo search failed:', err);
+    return await searchWikipediaFallback(cleanQuery);
+  }
+};
+
+const searchWikipediaFallback = async (query) => {
+  try {
+    const fallbackUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=thumbnail&pithumbsize=600&origin=*&titles=${encodeURIComponent(
+      query
+    )}`;
+    const res = await fetch(fallbackUrl);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data.query || !data.query.pages) return [];
+
+    const pages = Object.values(data.query.pages);
+    return pages
+      .filter((p) => p.thumbnail && p.thumbnail.source)
+      .map((p) => ({
+        id: p.pageid,
+        title: p.title,
+        url: p.thumbnail.source,
+        thumbnail: p.thumbnail.source
+      }));
+  } catch {
     return [];
   }
 };
