@@ -1,0 +1,17 @@
+{
+  "name": "Shop Banner Maker - Grocery & Fresh Produce",
+  "short_name": "BannerMaker",
+  "description": "Create instant promotional banners, price boards and posters for fruits, vegetables & grocery shops.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#16a34a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
