@@ -36,7 +36,7 @@ export const SingleProductLayout = ({
         {/* Shop Header Bar */}
         {shopProfile?.showShopHeader && (
           <div className="flex items-center justify-between pb-4 border-b border-white/20 mb-3.5">
-            <div className="flex items-center gap-3.5 min-w-0">
+            <div className="flex items-center gap-3.5">
               {shopProfile.logoUrl ? (
                 <img
                   src={getAssetUrl(shopProfile.logoUrl)}
@@ -48,12 +48,12 @@ export const SingleProductLayout = ({
                   🥬
                 </div>
               )}
-              <div className="min-w-0">
-                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white uppercase drop-shadow-md whitespace-nowrap truncate">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white uppercase drop-shadow-md whitespace-nowrap">
                   {shopProfile.name || 'GREENVEG BASKET'}
                 </h1>
                 {shopProfile.tagline && (
-                  <p className="text-xs sm:text-sm font-semibold text-white/90 tracking-wide mt-0.5 truncate">
+                  <p className="text-xs sm:text-sm font-semibold text-white/90 tracking-wide mt-0.5 whitespace-nowrap">
                     {shopProfile.tagline}
                   </p>
                 )}
@@ -113,7 +113,7 @@ export const SingleProductLayout = ({
             )}
 
             {/* Direct Farm Fresh sticker */}
-            <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 bg-slate-950 text-white text-[11px] font-black px-4 py-1 rounded-full whitespace-nowrap shadow-xl border border-white/40 flex items-center gap-1.5 z-20">
+            <div className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 bg-slate-950 text-white text-[11px] font-black px-6 py-1.5 rounded-full whitespace-nowrap shadow-xl border border-white/40 flex items-center gap-1.5 z-20">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               <span>{t.farmFresh}</span>
             </div>
@@ -131,7 +131,7 @@ export const SingleProductLayout = ({
           )}
 
           {/* Product Name */}
-          <h2 className="text-4xl sm:text-5xl font-black text-white leading-tight drop-shadow-md tracking-tight px-2 max-w-full truncate">
+          <h2 className="text-4xl sm:text-5xl font-black text-white leading-tight drop-shadow-md tracking-tight px-2 whitespace-nowrap">
             {product.name || 'Fresh Apple'}
           </h2>
 
@@ -192,9 +192,9 @@ export const SingleProductLayout = ({
       {shopProfile?.showShopFooter && (
         <div className={`relative z-10 w-full px-8 py-3.5 ${template.footerStyle} flex items-center justify-between gap-3 text-xs font-semibold shrink-0`}>
           {shopProfile.showAddress && shopProfile.address && (
-            <div className="flex items-center gap-1.5 max-w-sm truncate">
+            <div className="flex items-center gap-1.5 whitespace-nowrap">
               <MapPin className="w-4 h-4 shrink-0 text-amber-400" />
-              <span className="truncate">{shopProfile.address}</span>
+              <span>{shopProfile.address}</span>
             </div>
           )}
 

@@ -164,9 +164,9 @@ export const MultiProductLayout = ({
       {shopProfile?.showShopFooter && (
         <div className={`relative z-10 w-full px-10 py-5 ${template.footerStyle} flex flex-wrap items-center justify-between gap-4 text-sm font-semibold`}>
           {shopProfile.showAddress && shopProfile.address && (
-            <div className="flex items-center gap-2 max-w-md">
+            <div className="flex items-center gap-2 whitespace-nowrap">
               <MapPin className="w-5 h-5 shrink-0 text-amber-400" />
-              <span className="line-clamp-1">{shopProfile.address}</span>
+              <span>{shopProfile.address}</span>
             </div>
           )}
 
