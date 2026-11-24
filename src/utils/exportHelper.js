@@ -50,6 +50,8 @@ export const exportBanner = async ({
     height: targetH,
     canvasWidth: targetW * (Number(scale) || 2),
     canvasHeight: targetH * (Number(scale) || 2),
+    skipFonts: true,
+    fontEmbedCSS: '',
     style: {
       transform: 'none',
       transformOrigin: 'top left',
