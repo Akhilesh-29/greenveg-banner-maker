@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Tag, Percent, Sparkles, RefreshCw, Image, ArrowRight } from 'lucide-react';
+import { Plus, Trash2, Tag, Percent, Sparkles, RefreshCw, Image, ArrowRight, Globe, Loader2 } from 'lucide-react';
 import { UNITS } from '../constants/catalog';
 import { TRANSLATIONS } from '../constants/localization';
 import { getAssetUrl } from '../utils/assetHelper';
+import { findLocalPhoto, searchInternetPhotos } from '../utils/photoSearch';
 
 export const FormEditor = ({
   mode,
@@ -15,6 +16,8 @@ export const FormEditor = ({
   onOpenImagePicker
 }) => {
   const t = TRANSLATIONS[language] || TRANSLATIONS.en;
+  const [photoMatchMessage, setPhotoMatchMessage] = useState('');
+  const [isSearchingOnline, setIsSearchingOnline] = useState(false);
 
   // Single product savings calculation
   const mrp = Number(singleProduct.mrp) || 0;
@@ -22,6 +25,48 @@ export const FormEditor = ({
   const hasSavings = mrp > price && mrp > 0;
   const saveAmt = hasSavings ? mrp - price : 0;
   const savePct = hasSavings ? Math.round((saveAmt / mrp) * 100) : 0;
+
+  // AUTO-FETCH REAL PHOTO ON TYPING
+  const handleNameChange = (newName) => {
+    setSingleProduct((prev) => ({ ...prev, name: newName }));
+
+    // 1. Instant check against 60+ local photos
+    const localMatch = findLocalPhoto(newName);
+    if (localMatch) {
+      setSingleProduct((prev) => ({
+        ...prev,
+        name: newName,
+        customImage: localMatch,
+        emoji: ''
+      }));
+      setPhotoMatchMessage(`✨ Auto-matched photo for "${newName}"`);
+      return;
+    }
+
+    // 2. If no local match and user typed 3+ chars, debounced web lookup
+    if (newName.trim().length >= 3) {
+      setIsSearchingOnline(true);
+      setPhotoMatchMessage(`🔍 Searching web photo for "${newName}"...`);
+
+      clearTimeout(window._autoFetchTimer);
+      window._autoFetchTimer = setTimeout(async () => {
+        const results = await searchInternetPhotos(newName);
+        setIsSearchingOnline(false);
+        if (results && results.length > 0) {
+          setSingleProduct((prev) => ({
+            ...prev,
+            customImage: results[0].url,
+            emoji: ''
+          }));
+          setPhotoMatchMessage(`🌐 Auto-fetched photo for "${results[0].title}" from internet`);
+        } else {
+          setPhotoMatchMessage('');
+        }
+      }, 700);
+    } else {
+      setPhotoMatchMessage('');
+    }
+  };
 
   // Multi item handlers
   const handleAddItem = () => {
@@ -31,20 +76,50 @@ export const FormEditor = ({
     }
     const newItem = {
       id: Date.now().toString(),
-      name: 'Green Capsicum',
+      name: 'Fresh Cherry',
       emoji: '',
-      customImage: 'products/capsicum.jpg',
+      customImage: 'products/cherry.jpg',
       unit: '500 g',
-      mrp: 45,
-      price: 30
+      mrp: 180,
+      price: 139
     };
     setMultiItems([...multiItems, newItem]);
   };
 
   const handleUpdateItem = (id, field, value) => {
-    setMultiItems(
-      multiItems.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-    );
+    if (field === 'name') {
+      const localMatch = findLocalPhoto(value);
+      setMultiItems(
+        multiItems.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                name: value,
+                ...(localMatch && { customImage: localMatch, emoji: '' })
+              }
+            : item
+        )
+      );
+
+      // Web fallback if no local match
+      if (!localMatch && value.trim().length >= 3) {
+        clearTimeout(window[`_itemTimer_${id}`]);
+        window[`_itemTimer_${id}`] = setTimeout(async () => {
+          const results = await searchInternetPhotos(value);
+          if (results && results.length > 0) {
+            setMultiItems((prev) =>
+              prev.map((it) =>
+                it.id === id ? { ...it, customImage: results[0].url, emoji: '' } : it
+              )
+            );
+          }
+        }, 800);
+      }
+    } else {
+      setMultiItems(
+        multiItems.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+      );
+    }
   };
 
   const handleRemoveItem = (id) => {
@@ -58,10 +133,10 @@ export const FormEditor = ({
   const handleLoadSampleItems = () => {
     const samples = [
       { id: '1', name: 'Fresh Royal Apple', emoji: '', customImage: 'products/apple.jpg', unit: '1 kg', mrp: 180, price: 139 },
-      { id: '2', name: 'Farm Fresh Tomato', emoji: '', customImage: 'products/tomato.jpg', unit: '1 kg', mrp: 40, price: 24 },
-      { id: '3', name: 'Fresh Pahadi Potato', emoji: '', customImage: 'products/potato.jpg', unit: '1 kg', mrp: 45, price: 32 },
-      { id: '4', name: 'Nasik Red Onion', emoji: '', customImage: 'products/onion.jpg', unit: '1 kg', mrp: 55, price: 38 },
-      { id: '5', name: 'Crisp Red Carrot', emoji: '', customImage: 'products/carrot.jpg', unit: '500 g', mrp: 40, price: 28 }
+      { id: '2', name: 'Sweet Red Cherry', emoji: '', customImage: 'products/cherry.jpg', unit: '500 g', mrp: 220, price: 169 },
+      { id: '3', name: 'Fresh Strawberry', emoji: '', customImage: 'products/strawberry.jpg', unit: '1 box', mrp: 90, price: 65 },
+      { id: '4', name: 'Ripe Kiwi Fruit', emoji: '', customImage: 'products/kiwi.jpg', unit: '3 pieces', mrp: 75, price: 49 },
+      { id: '5', name: 'Hass Avocado', emoji: '', customImage: 'products/avocado.jpg', unit: '1 piece', mrp: 90, price: 69 }
     ];
     setMultiItems(samples);
   };
@@ -77,21 +152,24 @@ export const FormEditor = ({
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Product Image & Name
               </label>
-              <button
-                type="button"
-                onClick={() => onOpenImagePicker()}
-                className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
-              >
-                <Image className="w-3.5 h-3.5" /> Change Photo/Icon
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => onOpenImagePicker()}
+                  className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Globe className="w-3.5 h-3.5 text-blue-500" />
+                  <span>Search/Browse Photos</span>
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => onOpenImagePicker()}
-                className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border-2 border-emerald-500/50 flex items-center justify-center text-4xl shadow-sm hover:scale-105 transition overflow-hidden shrink-0"
-                title="Click to change visual"
+                className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border-2 border-emerald-500/50 flex items-center justify-center text-4xl shadow-sm hover:scale-105 transition overflow-hidden shrink-0 cursor-pointer"
+                title="Click to change or search photo"
               >
                 {singleProduct.customImage ? (
                   <img src={getAssetUrl(singleProduct.customImage)} alt="" className="w-full h-full object-cover" />
@@ -100,26 +178,47 @@ export const FormEditor = ({
                 )}
               </button>
 
-              <div className="flex-1">
+              <div className="flex-1 space-y-1">
                 <input
                   type="text"
                   value={singleProduct.name}
-                  onChange={(e) => setSingleProduct({ ...singleProduct, name: e.target.value })}
-                  placeholder="e.g. Fresh Royal Apple / ತಾಜಾ ಸೇಬು"
+                  onChange={(e) => handleNameChange(e.target.value)}
+                  placeholder="Type any fruit/veggie (e.g. Cherry, Apple, Avocado)..."
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-base focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                 />
               </div>
             </div>
 
-            {/* Quick Product Name Suggestions */}
+            {/* Live Auto-Fetch Status Pill */}
+            {photoMatchMessage && (
+              <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 text-xs font-bold text-blue-700 dark:text-blue-300">
+                <div className="flex items-center gap-1.5">
+                  {isSearchingOnline ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                  ) : (
+                    <span>📸</span>
+                  )}
+                  <span>{photoMatchMessage}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onOpenImagePicker()}
+                  className="text-[11px] underline text-blue-600 dark:text-blue-400 hover:text-blue-800"
+                >
+                  Change
+                </button>
+              </div>
+            )}
+
+            {/* Quick Suggestions (Try typing cherry, kiwi, etc.) */}
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
-              <span className="text-[11px] font-semibold text-slate-400">Quick:</span>
-              {['Kashmir Apple', 'Fresh Tomato', 'Nasik Onion', 'Green Chilli', 'Sweet Mango'].map((name) => (
+              <span className="text-[11px] font-semibold text-slate-400">Try typing:</span>
+              {['Cherry', 'Strawberry', 'Avocado', 'Kiwi', 'Blueberry', 'Dragon Fruit', 'Fresh Mango'].map((name) => (
                 <button
                   key={name}
                   type="button"
-                  onClick={() => setSingleProduct({ ...singleProduct, name })}
-                  className="text-[11px] px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-500 transition"
+                  onClick={() => handleNameChange(name)}
+                  className="text-[11px] px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 transition"
                 >
                   {name}
                 </button>
@@ -287,7 +386,7 @@ export const FormEditor = ({
                 Rate Board Items ({multiItems.length})
               </h4>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Add 3 to 8 items for a crisp display
+                Type any item (Cherry, Kiwi, Avocado) — photos auto-fetch!
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -325,11 +424,12 @@ export const FormEditor = ({
                       #{index + 1}
                     </span>
 
-                    {/* Emoji trigger */}
+                    {/* Photo trigger */}
                     <button
                       type="button"
-                      onClick={() => onOpenImagePicker(item.id)}
-                      className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 flex items-center justify-center text-2xl hover:scale-105 transition shrink-0"
+                      onClick={() => onOpenImagePicker(item.id, item.name)}
+                      className="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 flex items-center justify-center text-2xl hover:scale-105 transition shrink-0 overflow-hidden"
+                      title="Click to search or pick photo"
                     >
                       {item.customImage ? (
                         <img src={getAssetUrl(item.customImage)} alt="" className="w-full h-full object-cover rounded-xl" />
@@ -338,13 +438,13 @@ export const FormEditor = ({
                       )}
                     </button>
 
-                    {/* Item Name */}
+                    {/* Item Name with Auto-Photo trigger */}
                     <div className="flex-1">
                       <input
                         type="text"
                         value={item.name}
                         onChange={(e) => handleUpdateItem(item.id, 'name', e.target.value)}
-                        placeholder="Item name"
+                        placeholder="e.g. Cherry, Strawberry"
                         className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-sm focus:ring-1 focus:ring-emerald-500 focus:outline-none"
                       />
                     </div>

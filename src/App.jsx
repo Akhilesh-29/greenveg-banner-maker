@@ -45,6 +45,7 @@ export default function App() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
   const [targetMultiItemId, setTargetMultiItemId] = useState(null);
+  const [pickerInitialQuery, setPickerInitialQuery] = useState('');
 
   // Mobile Active Tab: 'edit' | 'design' | 'preview'
   const [mobileTab, setMobileTab] = useState('edit');
@@ -93,8 +94,9 @@ export default function App() {
   const exportRef = useRef(null);
 
   // Image Picker Trigger Handler
-  const handleOpenImagePicker = (multiItemId = null) => {
+  const handleOpenImagePicker = (multiItemId = null, query = '') => {
     setTargetMultiItemId(multiItemId);
+    setPickerInitialQuery(query || (!multiItemId ? singleProduct.name : ''));
     setIsImagePickerOpen(true);
   };
 
@@ -397,6 +399,7 @@ export default function App() {
         onSelect={handleSelectVisual}
         currentEmoji={singleProduct.emoji}
         currentImage={singleProduct.customImage}
+        initialQuery={pickerInitialQuery}
       />
 
       <ShopProfileModal
